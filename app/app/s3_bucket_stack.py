@@ -9,8 +9,8 @@ class S3BucketStack(core.Stack):
     def __init__(self,scope:core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope,id,**kwargs)
 
-        self.source_bucket_name_prefix = 'source-s3-bucket-replication-demo'
-        self.destination_bucket_name_prefix='destination-s3-bucket-replication-demo'
+        self.source_bucket_name_prefix = 'source-s3-bucket-replication-demo-1'
+        self.destination_bucket_name_prefix='destination-s3-bucket-replication-demo-1'
 
         if(self.region == 'us-east-1'):
             self.role=iam.Role(
@@ -56,7 +56,18 @@ class S3BucketStack(core.Stack):
                 versioning_configuration = s3.CfnBucket.VersioningConfigurationProperty(
                     status='Enabled'
                 ),
-                replication_configuration=self.replication_conf
+                replication_configuration=self.replication_conf,
+                bucket_encryption=s3.CfnBucket.BucketEncryptionProperty(
+                    server_side_encryption_configuration=[s3.CfnBucket.ServerSideEncryptionRuleProperty(
+                        bucket_key_enabled=True,
+                        server_side_encryption_by_default=s3.CfnBucket.ServerSideEncryptionByDefaultProperty(
+                            sse_algorithm="AES256",
+                
+                            # the properties below are optional
+                            # kms_master_key_id="kmsMasterKeyId"
+                        )
+                    )]
+                )
             )
 
         elif(self.region == 'us-west-2'):
@@ -67,6 +78,17 @@ class S3BucketStack(core.Stack):
                 bucket_name=f'{self.destination_bucket_name_prefix}-{self.region}',
                 versioning_configuration = s3.CfnBucket.VersioningConfigurationProperty(
                     status='Enabled'
+                ),
+                bucket_encryption=s3.CfnBucket.BucketEncryptionProperty(
+                    server_side_encryption_configuration=[s3.CfnBucket.ServerSideEncryptionRuleProperty(
+                        bucket_key_enabled=True,
+                        server_side_encryption_by_default=s3.CfnBucket.ServerSideEncryptionByDefaultProperty(
+                            sse_algorithm="AES256",
+                
+                            # the properties below are optional
+                            # kms_master_key_id="kmsMasterKeyId"
+                        )
+                    )]
                 )
             )
 
